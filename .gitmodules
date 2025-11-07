@@ -1,0 +1,27 @@
+[submodule "usr/share/gnome-shell/extensions/appindicatorsupport@rgcjonas.gmail.com"]
+	path = usr/share/gnome-shell/extensions/appindicatorsupport@rgcjonas.gmail.com
+	url = https://github.com/ubuntu/gnome-shell-extension-appindicator.git
+	branch = gnome-45
+[submodule "usr/share/gnome-shell/extensions/blur-my-shell@aunetx"]
+	path = usr/share/gnome-shell/extensions/blur-my-shell@aunetx
+	url = https://github.com/aunetx/blur-my-shell.git
+	branch = master
+[submodule "usr/share/gnome-shell/extensions/tmp/caffeine"]
+	path = usr/share/gnome-shell/extensions/tmp/caffeine
+	url = https://github.com/eonpatapon/gnome-shell-extension-caffeine.git
+	branch = master
+[submodule "usr/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com"]
+	path = usr/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com
+	url = https://github.com/micheleg/dash-to-dock.git
+	branch = ubuntu-dock
+[submodule "usr/share/gnome-shell/extensions/gsconnect@andyholmes.github.io"]
+	path = usr/share/gnome-shell/extensions/gsconnect@andyholmes.github.io
+	url = https://github.com/GSConnect/gnome-shell-extension-gsconnect.git
+	branch = main
+[submodule "usr/share/gnome-shell/extensions/logomenu@aryan_k"]
+	path = usr/share/gnome-shell/extensions/logomenu@aryan_k
+	url = https://github.com/ublue-os/Logomenu.git
+[submodule "usr/share/gnome-shell/extensions/search-light@icedman.github.com"]
+	path = usr/share/gnome-shell/extensions/search-light@icedman.github.com
+	url = https://github.com/icedman/search-light.git
+	branch = gnome-48

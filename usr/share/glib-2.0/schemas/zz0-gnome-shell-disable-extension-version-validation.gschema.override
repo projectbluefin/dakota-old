@@ -1,0 +1,4 @@
+[org.gnome.shell]
+# Disable extension version validation to allow extensions to load
+# regardless of their stated GNOME Shell version compatibility
+disable-extension-version-validation=true
