@@ -1,14 +1,15 @@
 FROM scratch AS ctx
 
+COPY files /files
 COPY build.sh /build.sh
 
-FROM quay.io/centos-bootc/centos-bootc:c10s
+FROM ghcr.io/alatiera/gnomeos-custom/gnomeos-homed:nightly
 
 RUN --mount=type=tmpfs,dst=/var \
     --mount=type=tmpfs,dst=/tmp \
     --mount=type=tmpfs,dst=/boot \
     --mount=type=tmpfs,dst=/run \
-    --mount=type=bind,from=ctx,source=/,dst=/tmp/build-scripts \
-    /tmp/build-scripts/build.sh
+    --mount=type=bind,from=ctx,source=/,dst=/tmp/ctx \
+    /tmp/ctx/build.sh
 
-RUN rm -rf /var/* && bootc container lint --fatal-warnings
+RUN bootc container lint

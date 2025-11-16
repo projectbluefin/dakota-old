@@ -14,9 +14,9 @@ on:
   workflow_dispatch:
 
 env:
-  IMAGE_DESC: "Bootc image for my router"
+  IMAGE_DESC: "Bootc image for testing GNOMEOS Bluefin"
   IMAGE_KEYWORDS: "bootc,centos"
-  IMAGE_LOGO_URL: "https://avatars.githubusercontent.com/u/120078124?s=200&v=4"
+  IMAGE_LOGO_URL: "https://avatars.githubusercontent.com/u/136393846?s=200&v=4"
   IMAGE_NAME: "${{ github.event.repository.name }}"
   IMAGE_REGISTRY: "ghcr.io/${{ github.repository_owner }}"
   DEFAULT_TAG: "latest"

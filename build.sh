@@ -2,115 +2,71 @@
 
 set -xeuo pipefail
 
-tee /usr/lib/systemd/journald.conf.d/99-audit.conf <<'EOF'
-[Journal]
-Audit=yes
-ReadKMsg=yes
+cp -avf "/tmp/ctx/files"/. /
+
+wget -O /usr/share/homebrew.tar.zst "https://github.com/ublue-os/packages/releases/download/homebrew-2025-11-11-01-29-58/homebrew-$(arch).tar.zst"
+
+# wallpaper needs whatever
+# jetbrains font?
+
+# # Install tooling
+# dnf5 -y install glib2-devel meson sassc cmake dbus-devel
+
+# AppIndicator Support
+glib-compile-schemas --strict /usr/share/gnome-shell/extensions/appindicatorsupport@rgcjonas.gmail.com/schemas
+
+# Blur My Shell
+# make -C /usr/share/gnome-shell/extensions/blur-my-shell@aunetx
+# unzip -o /usr/share/gnome-shell/extensions/blur-my-shell@aunetx/build/blur-my-shell@aunetx.shell-extension.zip -d /usr/share/gnome-shell/extensions/blur-my-shell@aunetx
+# glib-compile-schemas --strict /usr/share/gnome-shell/extensions/blur-my-shell@aunetx/schemas
+# rm -rf /usr/share/gnome-shell/extensions/blur-my-shell@aunetx/build
+
+# Caffeine
+# The Caffeine extension is built/packaged into a temporary subdirectory (tmp/caffeine/caffeine@patapon.info).
+# Unlike other extensions, it must be moved to the standard extensions directory so GNOME Shell can detect it.
+mv /usr/share/gnome-shell/extensions/tmp/caffeine/caffeine@patapon.info /usr/share/gnome-shell/extensions/caffeine@patapon.info
+glib-compile-schemas --strict /usr/share/gnome-shell/extensions/caffeine@patapon.info/schemas
+
+# Dash to Dock
+# make -C /usr/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com
+# glib-compile-schemas --strict /usr/share/gnome-shell/extensions/dash-to-dock@micxgx.gmail.com/schemas
+
+# GSConnect (commented out until G49 support)
+# meson setup --prefix=/usr /usr/share/gnome-shell/extensions/gsconnect@andyholmes.github.io /usr/share/gnome-shell/extensions/gsconnect@andyholmes.github.io/_build
+# meson install -C /usr/share/gnome-shell/extensions/gsconnect@andyholmes.github.io/_build --skip-subprojects
+# GSConnect installs schemas to /usr/share/glib-2.0/schemas and meson compiles them automatically
+
+# Logo Menu
+# xdg-terminal-exec is required for this extension as it opens up terminals using that script
+install -Dpm0755 -t /usr/bin /usr/share/gnome-shell/extensions/logomenu@aryan_k/distroshelf-helper
+install -Dpm0755 -t /usr/bin /usr/share/gnome-shell/extensions/logomenu@aryan_k/missioncenter-helper
+glib-compile-schemas --strict /usr/share/gnome-shell/extensions/logomenu@aryan_k/schemas
+
+# Search Light
+glib-compile-schemas --strict /usr/share/gnome-shell/extensions/search-light@icedman.github.com/schemas
+
+tee /usr/share/glib-2.0/schemas/zz3-bluefin-unsupported-stuff.gschema.override <<EOF
+[org.gnome.shell]
+disable-extension-version-validation='true'
 EOF
 
-systemctl enable sshd
-systemctl enable podman-auto-update.timer
-systemctl enable --global podman-auto-update.timer
+# gnome extensions
+HARDCODED_RPM_MONTH="12"
+sed -i "/picture-uri/ s/${HARDCODED_RPM_MONTH}/$(date +%m)/" "/usr/share/glib-2.0/schemas/zz0-bluefin-modifications.gschema.override"
 
-# Unsure why removing nfs-utils is annoying here
-mkdir -p /var/lib/rpm-state/
-touch /var/lib/rpm-state/nfs-server.cleanup
+rm /usr/share/glib-2.0/schemas/gschemas.compiled
+glib-compile-schemas /usr/share/glib-2.0/schemas
 
-dnf -y remove \
-  NetworkManager \
-  adcli \
-  bash-completion \
-  bind-utils \
-  chrony \
-  cloud-utils-growpart \
-  criu* \
-  efibootmgr \
-  ethtool \
-  flatpak-session-helper \
-  jq \
-  libdnf-plugin-subscription-manager \
-  nano \
-  net-tools \
-  nfs-server \
-  nfs-utils \
-  pkg-config* \
-  python3-cloud-what \
-  python3-subscription-manager-rhsm \
-  socat \
-  sos \
-  sssd* \
-  stalld \
-  subscription-manager \
-  subscription-manager-rhsm-certificates \
-  sudo-python-plugin \
-  toolbox \
-  virt-what \
-  yggdrasil*
+mkdir -p "/usr/share/fonts/Maple Mono"
 
-dnf -y install --setopt=install_weak_deps=False \
-  audit \
-  audit-libs \
-  audit-rules \
-  console-login-helper-messages \
-  console-login-helper-messages-issuegen \
-  console-login-helper-messages-motdgen \
-  console-login-helper-messages-profile \
-  firewalld \
-  git-core \
-  greenboot \
-  ppp \
-  rsync \
-  systemd-oomd \
-  systemd-resolved \
-  tcpdump \
-  traceroute \
-  udisks2-lvm2 \
-  xdg-user-dirs
+JBMONO_TMPDIR="$(mktemp -d)"
+trap 'rm -rf "${JBMONO_TMPDIR}"' EXIT
 
-systemctl enable auditd
-systemctl enable firewalld
+curl -fSsLo "${JBMONO_TMPDIR}/jbmono.zip" "https://github.com/JetBrains/JetBrainsMono/releases/download/v2.304/JetBrainsMono-2.304.zip"
+unzip "${JBMONO_TMPDIR}/jbmono.zip" -d "/usr/share/fonts/JetBrains Mono"
 
-dnf -y install epel-release
-dnf config-manager --set-disabled epel
-dnf -y install --enablerepo="epel" \
-  just \
-  systemd-networkd \
-  systemd-networkd-defaults \
-  systemd-timesyncd
+echo "DEFAULT_HOSTNAME=bluefin" | tee -a /usr/lib/os-release
 
-systemctl enable systemd-networkd
-systemctl enable systemd-timesyncd
-
-sed -i 's|^ExecStart=.*|ExecStart=/usr/bin/bootc update --quiet|' /usr/lib/systemd/system/bootc-fetch-apply-updates.service
-sed -i 's|^OnUnitInactiveSec=.*|OnUnitInactiveSec=7d\nPersistent=true|' /usr/lib/systemd/system/bootc-fetch-apply-updates.timer
-sed -i 's|#AutomaticUpdatePolicy.*|AutomaticUpdatePolicy=stage|' /etc/rpm-ostreed.conf
-sed -i 's|#LockLayering.*|LockLayering=true|' /etc/rpm-ostreed.conf
-
-systemctl enable bootc-fetch-apply-updates
-
-tee /usr/lib/systemd/zram-generator.conf <<'EOF'
-[zram0]
-zram-size = min(ram, 8192)
-EOF
-tee /usr/lib/sysctl.d/99-rcore-memmax.conf <<'EOF'
-# Required for unprivileged unbound
-net.core.rmem_max=262144
-EOF
-tee /usr/lib/sysctl.d/99-forwarding <<'EOF'
-# Kernel needs to be happy for ipv6 assignment on LAN devices
-net.ipv6.conf.all.forwarding=1
-net.ipv6.conf.default.forwarding=1
-EOF
-tee /usr/lib/systemd/system-preset/91-resolved-default.preset <<'EOF'
-enable systemd-resolved.service
-EOF
-tee /usr/lib/tmpfiles.d/resolved-default.conf <<'EOF'
-L /etc/resolv.conf - - - - ../run/systemd/resolve/stub-resolv.conf
-EOF
-
-systemctl preset systemd-resolved.service
-
-KERNEL_VERSION="$(find "/usr/lib/modules" -maxdepth 1 -type d ! -path "/usr/lib/modules" -exec basename '{}' ';' | sort | tail -n 1)"
-export DRACUT_NO_XATTR=1
-dracut --no-hostonly --kver "$KERNEL_VERSION" --reproducible --zstd -v --add ostree -f "/usr/lib/modules/$KERNEL_VERSION/initramfs.img"
-chmod 0600 "/usr/lib/modules/${KERNEL_VERSION}/initramfs.img"
+systemctl enable brew-setup.service
+systemctl enable brew-upgrade.timer
+systemctl enable brew-update.timer
