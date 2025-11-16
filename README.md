@@ -13,7 +13,7 @@
 
 ## Goals
 
-- From scratch buildstream setup in @projectbluefin/egg
+- From scratch buildstream setup in [@projectbluefin/egg](https://github.com/projectbluefin/egg)
 - This repository assembles it all together, aka the containerfile
 - No dx image, everything in homebrew or sysexts
 
