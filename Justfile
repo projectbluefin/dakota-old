@@ -48,4 +48,7 @@ run-vm $base_dir=base_dir:
         -drive if=pflash,format=qcow2,readonly=on,file=/usr/share/edk2/ovmf/OVMF_CODE_4M.qcow2 \
         -drive file={{base_dir}}/bootable.img,format=raw,if=virtio
 
-show-me-the-future: build-containerfile generate-bootable-image run-vm
+init-submodules:
+    git submodule update --init --recursive
+
+show-me-the-future: init-submodules build-containerfile generate-bootable-image run-vm
