@@ -3,7 +3,7 @@ FROM scratch AS ctx
 COPY files /files
 COPY --from=ghcr.io/projectbluefin/common:latest /system_files/bluefin /files
 COPY --from=ghcr.io/projectbluefin/common:latest /system_files/shared /files
-COPY --from=ghcr.io/ublue-os/brew:latest /system_files /files
+COPY --from=ghcr.io/projectbluefin/brew:latest /system_files /files
 COPY build.sh /build.sh
 
 FROM quay.io/gnome_infrastructure/gnome-build-meta:gnomeos-nightly
