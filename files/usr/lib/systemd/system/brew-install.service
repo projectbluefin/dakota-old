@@ -1,0 +1,16 @@
+[Unit]
+Description=Install Homebrew Casks
+After=local-fs.target network-online.target
+Wants=network-online.target
+ConditionPathExists=/etc/.linuxbrew
+ConditionPathExists=!/var/home/linuxbrew/.brew-casks-installed
+
+[Service]
+User=1000
+Type=oneshot
+Environment=HOMEBREW_CELLAR=/var/home/linuxbrew/.linuxbrew/Cellar
+Environment=HOMEBREW_PREFIX=/var/home/linuxbrew/.linuxbrew
+Environment=HOMEBREW_REPOSITORY=/var/home/linuxbrew/.linuxbrew/Homebrew
+ExecStart=/usr/libexec/brew-install
+ExecStartPost=/usr/bin/touch /var/home/linuxbrew/.brew-casks-installed
+ExecStartPost=+/usr/bin/systemctl disable --now brew-install.timer

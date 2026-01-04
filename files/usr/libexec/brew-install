@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+BREW_PREFIX="/var/home/linuxbrew/.linuxbrew"
+BREW="${BREW_PREFIX}/bin/brew"
+
+ITEMS=(
+    glow
+    font-jetbrains-mono
+    font-jetbrains-mono-nerd-font
+)
+
+if [[ ${#ITEMS[@]} -eq 0 ]]; then
+    echo "No items configured for installation"
+    exit 0
+fi
+
+for item in "${ITEMS[@]}"; do
+    echo "Installing item: ${item}"
+    "${BREW}" install "${item}" || {
+        echo "Failed to install item: ${item}"
+    }
+done
+
+echo "Installation complete"

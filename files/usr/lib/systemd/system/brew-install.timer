@@ -1,0 +1,11 @@
+[Unit]
+Description=Timer for Homebrew cask installation
+Wants=network-online.target
+
+[Timer]
+OnBootSec=1min
+OnUnitInactiveSec=1min
+Persistent=true
+
+[Install]
+WantedBy=timers.target
