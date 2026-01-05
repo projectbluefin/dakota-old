@@ -43,8 +43,5 @@ glib-compile-schemas /usr/share/glib-2.0/schemas
 
 /tmp/ctx/build_scripts/base/branding.sh
 
-# Enable services
 systemctl enable brew-setup.service
-systemctl enable brew-upgrade.timer
-systemctl enable brew-update.timer
 
