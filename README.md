@@ -7,7 +7,7 @@
 >
 > -- John Bazzite
 
-`projectbluefin/distroless` is built on [GNOME OS](https://os.gnome.org/). This is a prototype and not ready and may bite.
+`projectbluefin/dakota` is built on [GNOME OS](https://os.gnome.org/). This is a prototype and not ready and may bite.
 
 ![Dakorator](https://github.com/user-attachments/assets/ee92291d-a617-496e-abb6-9045a4c665ce)
 
@@ -25,8 +25,8 @@
 - Make a layer that all Bluefin's can use for system things, like the gnome schemas, etc, that can just be copied into the containerfile. 
 
 ## Get started
-    git clone https://github.com/projectbluefin/distroless.git
-    cd distroless
+    git clone https://github.com/projectbluefin/dakota.git
+    cd dakota
     just show-me-the-future
 
 Will build and run Bluefin in a VM. This image is based on GNOME50 so most of the desktop Bluefin changes don't work. The automation is in place though, just check back often to see progress.

@@ -9,7 +9,7 @@ COPY build.sh /build.sh
 
 FROM quay.io/gnome_infrastructure/gnome-build-meta:gnomeos-nightly
 
-ARG IMAGE_NAME="${IMAGE_NAME:-bluefin-dakota}"
+ARG IMAGE_NAME="${IMAGE_NAME:-dakota}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR:-projectbluefin}"
 
 RUN --mount=type=tmpfs,dst=/var \
@@ -20,6 +20,6 @@ RUN --mount=type=tmpfs,dst=/var \
     /tmp/ctx/build.sh
 
 LABEL containers.bootc=1
-LABEL org.opencontainers.image.source="https://github.com/projectbluefin/distroless"
+LABEL org.opencontainers.image.source="https://github.com/projectbluefin/dakota"
 
 RUN bootc container lint

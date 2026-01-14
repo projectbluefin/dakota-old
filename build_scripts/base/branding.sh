@@ -20,8 +20,8 @@ EOF
 IMAGE_PRETTY_NAME="Bluefin"
 HOME_URL="https://projectbluefin.io"
 DOCUMENTATION_URL="https://docs.projectbluefin.io"
-SUPPORT_URL="https://github.com/projectbluefin/distroless/issues"
-BUG_SUPPORT_URL="https://github.com/projectbluefin/distroless/issues"
+SUPPORT_URL="https://github.com/projectbluefin/dakota/issues"
+BUG_SUPPORT_URL="https://github.com/projectbluefin/dakota/issues"
 CODE_NAME="Dakotaraptor"
 ID="bluefin-dakota"
 
