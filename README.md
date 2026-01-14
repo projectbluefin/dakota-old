@@ -11,18 +11,25 @@
 
 ![Dakorator](https://github.com/user-attachments/assets/ee92291d-a617-496e-abb6-9045a4c665ce)
 
+## Status
+
+- Consume GNOME nightly bootc image (done)
+- Final assembly in this repo (done)
+
+## Future Layout
+
+- Consume GNOME buildstream definitions and apply Bluefin changes:
+  - Bluefin buildstream definitions [@projectbluefin/egg](https://github.com/projectbluefin/egg)
+- Final assembly in this repo
+
 ## Goals
 
-- Additions from GNOME OS are in [@projectbluefin/egg](https://github.com/projectbluefin/egg)
-- This repository assembles it all together, aka the containerfile
 - No dx image, everything in homebrew or sysexts
 
 ## Missing things
 
 - Installation
 - Ensuring upgrades and rollbacks work
-- Waiting for bluefin's customizations to be moved to homebrew
-- Make a layer that all Bluefin's can use for system things, like the gnome schemas, etc, that can just be copied into the containerfile. 
 
 ## Get started
     git clone https://github.com/projectbluefin/dakota.git
