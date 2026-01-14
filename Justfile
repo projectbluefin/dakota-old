@@ -1,4 +1,4 @@
-image_name := env("BUILD_IMAGE_NAME", "ghcr.io/projectbluefin/distroless")
+image_name := env("BUILD_IMAGE_NAME", "ghcr.io/projectbluefin/bluefin-dakota")
 image_tag := env("BUILD_IMAGE_TAG", "latest")
 base_dir := env("BUILD_BASE_DIR", ".")
 filesystem := env("BUILD_FILESYSTEM", "btrfs")
@@ -19,13 +19,9 @@ bootc *ARGS:
 
 generate-bootable-image $base_dir=base_dir $filesystem=filesystem:
     #!/usr/bin/env bash
-    if [ ! -e "${base_dir}/bootable.img" ] ; then
-        echo "Allocating 50G for bootable.img..."
-        fallocate -l 50G "${base_dir}/bootable.img"
-    fi
 
     just bootc install to-disk --composefs-backend \
-        --via-loopback /data/bootable.img \
+        /dev/sdb \
         --filesystem "${filesystem}" \
         --wipe \
         --bootloader systemd \

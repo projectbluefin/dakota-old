@@ -23,7 +23,7 @@ DOCUMENTATION_URL="https://docs.projectbluefin.io"
 SUPPORT_URL="https://github.com/projectbluefin/distroless/issues"
 BUG_SUPPORT_URL="https://github.com/projectbluefin/distroless/issues"
 CODE_NAME="Dakotaraptor"
-ID="bluefin-distroless"
+ID="bluefin-dakota"
 
 # OS-Release
 cat > /usr/lib/os-release <<EOF

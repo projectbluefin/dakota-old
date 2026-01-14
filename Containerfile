@@ -9,7 +9,7 @@ COPY build.sh /build.sh
 
 FROM quay.io/gnome_infrastructure/gnome-build-meta:gnomeos-nightly
 
-ARG IMAGE_NAME="${IMAGE_NAME:-distroless}"
+ARG IMAGE_NAME="${IMAGE_NAME:-bluefin-dakota}"
 ARG IMAGE_VENDOR="${IMAGE_VENDOR:-projectbluefin}"
 
 RUN --mount=type=tmpfs,dst=/var \
