@@ -28,7 +28,7 @@ done
 # Bluefin GSchema overrides
 tee /usr/share/glib-2.0/schemas/zz3-bluefin-unsupported-stuff.gschema.override <<EOF
 [org.gnome.shell]
-disable-extension-version-validation='true'
+disable-extension-version-validation=true
 EOF
 
 # Update background XML month dynamically
