@@ -40,6 +40,28 @@ Will build and run Bluefin in a VM. This image is based on GNOME50 so most of th
 
 ## Installation on Bare Metal
 
+### Rebase from existing Fedora Atomic Desktop installation
+
+> [!WARNING]
+>
+> This is your friendly reminder that <ins>this is a very, **VERY** experimental project!</ins> Here be dragons. Read these instructions <ins>carefully.</ins>
+>
+> Do note that there is **no package layering** here. If you have any layered packages with `rpm-ostree`, you will need to remove them before rebasing.
+>
+> Bootloader upgrades will not work via this method, as `dakota` does not have `bootupd` or `grub` in its image. You will be able to update the OS with `bootc update`, but the bootloader will never upgrade to fix security problems and such.
+>
+> Rebasing from the Fedora or CentOS based Bluefin is currently broken! Until we switch those images off of [ublue-os/legacy-rechunk](https://github.com/ublue-os/legacy-rechunk), you will need to rebase from a standard [Fedora Silverblue](https://fedoraproject.org/atomic-desktops/silverblue/) installation, otherwise GDM and many other services will be broken.
+
+It is possible to switch your existing installation to the new Bluefin. All you need to do is run the following command: 
+
+```bash
+bootc switch ghcr.io/projectbluefin/dakota:latest
+```
+
+Reboot, and you will have the new Bluefin!
+
+### The composefs method (experimental backend!!!)
+
 To install Bluefin, you first must build the image locally using `just build-containerfile`. Downloaded images won't work right now with `bootc install`, see [this issue](https://github.com/bootc-dev/bootc/issues/1703) for more details.
 
 Before you can install Bluefin to your disk, you must first create a partition layout. The layout should be as follows:
