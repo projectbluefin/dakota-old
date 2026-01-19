@@ -42,6 +42,7 @@ rm -f /usr/share/glib-2.0/schemas/gschemas.compiled
 glib-compile-schemas /usr/share/glib-2.0/schemas
 
 /tmp/ctx/build_scripts/base/branding.sh
+/tmp/ctx/build_scripts/base/initramfs.sh
 
 systemctl enable brew-setup.service
 

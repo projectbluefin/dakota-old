@@ -5,6 +5,7 @@ COPY build_scripts /build_scripts
 COPY --from=ghcr.io/projectbluefin/common:latest /system_files/bluefin /files
 COPY --from=ghcr.io/projectbluefin/common:latest /system_files/shared /files
 COPY --from=ghcr.io/ublue-os/brew:latest /system_files /files
+COPY --from=busybox:musl /bin/busybox /files/usr/bin/busybox
 COPY build.sh /build.sh
 
 FROM quay.io/gnome_infrastructure/gnome-build-meta:gnomeos-nightly
