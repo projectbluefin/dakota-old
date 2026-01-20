@@ -16,14 +16,6 @@ mkdir -p "${INITRAMFS_EXTRACT_DIR}"
 cd "${INITRAMFS_EXTRACT_DIR}"
 zstdcat "${INITRAMFS_EXTRACT_BLOCK_FILE}" | ${CPIO} -idmv
 
-# instal ostree boot support
-mkdir -p "${INITRAMFS_EXTRACT_DIR}/usr/lib/ostree"
-cp /usr/lib/ostree/ostree-prepare-root "${INITRAMFS_EXTRACT_DIR}/usr/lib/ostree/"
-ldd /usr/lib/ostree/ostree-prepare-root | grep -o '/[^ ]*' | xargs -I '{}' cp --parents -n -v '{}' "${INITRAMFS_EXTRACT_DIR}/"
-cp /usr/lib/systemd/system/ostree-prepare-root.service "${INITRAMFS_EXTRACT_DIR}/usr/lib/systemd/system/"
-cp /usr/lib/systemd/system/ostree-prepare-root.service "${INITRAMFS_EXTRACT_DIR}/usr/lib/systemd/system/"
-ln -s /usr/lib/systemd/system/ostree-prepare-root.service "${INITRAMFS_EXTRACT_DIR}/usr/lib/systemd/system/initrd-root-fs.target.wants/"
-
 # instal the Bluefin plymouth watermark
 cp /usr/share/plymouth/themes/spinner/watermark.png "${INITRAMFS_EXTRACT_DIR}/usr/share/plymouth/themes/spinner/watermark.png"
 
