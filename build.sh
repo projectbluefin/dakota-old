@@ -2,9 +2,11 @@
 
 set -xeuo pipefail
 
+# Copy files from devel non-destructively
+cp -avn "/tmp/ctx-devel/rootfs"/. /
+
 # Copy files from context
 cp -avf "/tmp/ctx/files"/. /
-
 
 # Caffeine extension setup
 # The Caffeine extension is built/packaged into a temporary subdirectory.

@@ -7,6 +7,16 @@ COPY --from=ghcr.io/projectbluefin/common:latest /system_files/shared /files
 COPY --from=ghcr.io/ublue-os/brew:latest /system_files /files
 COPY --from=busybox:musl /bin/busybox /files/usr/bin/busybox
 COPY build.sh /build.sh
+COPY devel-build.sh /devel-build.sh
+
+FROM quay.io/gnome_infrastructure/gnome-build-meta:gnomeos-devel-nightly AS devel
+
+RUN --mount=type=tmpfs,dst=/var \
+    --mount=type=tmpfs,dst=/tmp \
+    --mount=type=tmpfs,dst=/boot \
+    --mount=type=tmpfs,dst=/run \
+    --mount=type=bind,from=ctx,source=/,dst=/tmp/ctx \
+    /tmp/ctx/devel-build.sh
 
 FROM quay.io/gnome_infrastructure/gnome-build-meta:gnomeos-nightly
 
@@ -18,6 +28,7 @@ RUN --mount=type=tmpfs,dst=/var \
     --mount=type=tmpfs,dst=/boot \
     --mount=type=tmpfs,dst=/run \
     --mount=type=bind,from=ctx,source=/,dst=/tmp/ctx \
+    --mount=type=bind,from=devel,source=/,dst=/tmp/ctx-devel \
     /tmp/ctx/build.sh
 
 LABEL containers.bootc=1
