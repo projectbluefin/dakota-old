@@ -54,6 +54,7 @@ copy_recursively /usr/share/zsh/site-functions/_wl-paste /rootfs
 copy_recursively /usr/share/gcc-* /rootfs
 copy_recursively /usr/include/c++ /rootfs
 copy_recursively /usr/lib/gcc /rootfs
+copy_recursively /usr/libexec/gcc /rootfs
 copy_recursively /usr/share/gdb/auto-load/usr/lib/x86_64-linux-gnu/libstdc++.so.*.py /rootfs
 
 mv /rootfs/lib64 /rootfs/usr/lib64
