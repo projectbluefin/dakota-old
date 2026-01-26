@@ -27,7 +27,7 @@ install target_disk="":
         DISK="/dev/$DISK"
     fi
     PART_PREFIX=""
-    if [[ "$DISK" =~ "nvme" || "$DISK" =~ "mmcblk" ]]; then
+    if [[ "$DISK" =~ "nvme" || "$DISK" =~ "mmcblk" || "$DISK" =~ "loop" ]]; then
         PART_PREFIX="p"
     fi
     
