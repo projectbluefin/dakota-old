@@ -5,12 +5,12 @@ boot_size := "2G"
 mount_point := "/var/mnt"
 image := "ghcr.io/projectbluefin/dakota"
 
-default: install
+_default: install
 
 check-deps:
     #!/usr/bin/env bash
     set -e
-    deps=(tmux gum fzf wipefs sgdisk mkfs.fat mkfs.btrfs podman cryptsetup udevadm)
+    deps=(tmux gum fzf wipefs sgdisk mkfs.fat mkfs.btrfs mkfs.ext4 podman cryptsetup udevadm)
     missing=()
     for dep in "${deps[@]}"; do
         command -v "$dep" >/dev/null 2>&1 || missing+=("$dep")
@@ -21,14 +21,14 @@ check-deps:
         exit 1
     fi
 
-install target_disk="":
+install:
     #!/usr/bin/env bash
     set -e
     just -f ./install-to-disk.just check-deps
 
-    # Only run the prompt and build logic if we ARE NOT already in tmux
+    # Tmux init
     if [ -z "$TMUX" ]; then
-        gum style --foreground "#006ff6ff" "You need a container build of Dakota. Is it already done, or do you want to build it now?"
+        gum style --foreground "#006ff6ff" "You need a podman build of Dakota. Is it already done, or do you want to build it now?"
         gum style --faint --italic --foreground "#ff0000" "If you don't have a build ready, bootc will try to pull for ghcr.io and the install will fail"
         ACCEPT=$(gum choose "Build it now" "Already done, skip")
 
@@ -41,7 +41,7 @@ install target_disk="":
             just build-containerfile
         fi
 
-        exec tmux new-session -s dakota-install -c "$PWD" "just -f ./install-to-disk.just install '{{target_disk}}'; echo 'Press Enter to close'; read"
+        exec tmux new-session -s dakota-install -c "$PWD" "just -f ./install-to-disk.just install; echo 'Press Enter to close'; read"
     fi
 
     # Create splits
@@ -58,15 +58,14 @@ install target_disk="":
     # Initialize Log
     echo -e "\n--- 🪵 Dakota Installation Logs [$(date)] ---\n" > "$LOG_FILE"
     export LOG_FILE
-    # --- END TMUX SETUP ---
 
-    DISK="{{target_disk}}"
-
+    # Actual install logic
     gum style --bold '🦕 DAKOTA CLI INSTALLER'
     gum style --faint --italic --foreground 212 "Thank you for testing Dakota!"
     gum style --foreground 212 "The installer needs sudo permissions to manage disks..."
     sudo -v
 
+    # Disk Selection
     if [ -z "$DISK" ]; then
         DISK=$(lsblk -d -n -o NAME,TRAN | awk '$2 != "" {print $1}' |
         fzf --header='Select installation disk (🚧 WILL BE WIPED! 🚧)' --preview 'lsblk /dev/{}')
@@ -77,6 +76,11 @@ install target_disk="":
     fi
     if [[ "$DISK" != /dev/* ]]; then DISK="/dev/$DISK"; fi
     
+    # Filesystem Selection
+    gum style --foreground 212 "Choose your preferred root filesystem:"
+    # FS_TYPE=$(gum choose --header "~ Btrfs is recommanded" "btrfs" "ext4" "xfs")
+    FS_TYPE=$(gum choose --header "~ Btrfs is recommanded" "btrfs" "ext4") # XFS disabled until it supports verity-fs
+
     PART_PREFIX=""
     if [[ "$DISK" =~ "nvme" || "$DISK" =~ "mmcblk" || "$DISK" =~ "loop" ]]; then PART_PREFIX="p"; fi
     
@@ -84,11 +88,13 @@ install target_disk="":
     DEV_ROOT="${DISK}${PART_PREFIX}2"
     MAPPER="/dev/mapper/{{mapper_name}}"
 
+    # Installer info
     gum style --align left --border normal --margin "1" --padding "1" --border-foreground 212 \
         "$(gum style --bold '🦖 DAKOTA CLI INSTALLER')" \
         "$(gum style --faint 'Configuration:')" \
         "" \
         "💽 Target Disk:     ${DISK:-'None'}" \
+        "📂 Filesystem:      ${FS_TYPE}" \
         "🔒️ Root Partition:  ${DEV_ROOT:-'None'}" \
         "🥾 Boot Partition:  ${DEV_BOOT:-'None'}" \
         "🖼️ Image:           {{image}}" \
@@ -98,8 +104,6 @@ install target_disk="":
         gum style --foreground 1 "Aborted."
         exit 1
     fi
-
-    # Redirect all output to tmux pane >> "$LOG_FILE"
 
     gum spin --spinner dot --title "Cleaning up previous mounts..." -- bash -c \
         "{ sudo umount -R {{mount_point}} 2>/dev/null || true; sudo cryptsetup close {{mapper_name}} 2>/dev/null || true; } >> \"$LOG_FILE\" 2>&1"
@@ -114,6 +118,7 @@ install target_disk="":
         sudo sgdisk -n 2:0:0 -t 2:8300 -c 2:\"{{root_label}}\" $DISK
     } >> \"$LOG_FILE\" 2>&1"
 
+    # LUKS password setup
     while true; do
         PASS=$(gum input --password --placeholder "Enter desired LUKS Passphrase")
         PASS_CONFIRM=$(gum input --password --placeholder "Confirm LUKS Passphrase")
@@ -131,11 +136,18 @@ install target_disk="":
     export PASS=""
     unset PASS PASS_CONFIRM
 
-    gum spin --spinner hamburger --title "Creating filesystems on $DISK..." -- bash -c "
+    # Filesystem Creation
+    gum spin --spinner hamburger --title "Creating filesystems ($FS_TYPE) on $DISK..." -- bash -c "
         {
             sudo udevadm settle
             sudo mkfs.fat -F 32 -n {{boot_label}} $DEV_BOOT
-            sudo mkfs.btrfs -L {{root_label}} -f $MAPPER
+            if [ \"$FS_TYPE\" = \"btrfs\" ]; then
+                sudo mkfs.btrfs -L {{root_label}} -f $MAPPER
+            elif [ \"$FS_TYPE\" = \"xfs\" ]; then
+                sudo mkfs.xfs -L {{root_label}} $MAPPER
+            else
+                sudo mkfs.ext4 -O verity -L {{root_label}} -F $MAPPER
+            fi
             sudo mount $MAPPER {{mount_point}}
             sudo mount --mkdir $DEV_BOOT {{mount_point}}/boot
         } >> \"$LOG_FILE\" 2>&1"
@@ -143,6 +155,7 @@ install target_disk="":
     BOOT_UUID=$(sudo blkid -s UUID -o value $DEV_BOOT)
     LUKS_UUID=$(sudo blkid -s UUID -o value $DEV_ROOT)
 
+    echo "-> FS Type: $FS_TYPE" >> "$LOG_FILE"
     echo "-> LUKS UUID: $LUKS_UUID" >> "$LOG_FILE"
     echo "-> BOOT UUID: $BOOT_UUID" >> "$LOG_FILE"
 
@@ -166,7 +179,7 @@ install target_disk="":
         } >> \"$LOG_FILE\" 2>&1 || true
     "
 
-    echo "Installation done, ignore fsfreeze error" >> "$LOG_FILE"
+    echo "Installation over, ignore fsfreeze error" >> "$LOG_FILE"
 
     sudo mount -o remount,rw {{mount_point}} >> "$LOG_FILE"
     sudo mount -o remount,rw {{mount_point}}/boot >> "$LOG_FILE"
@@ -175,9 +188,15 @@ install target_disk="":
     BOOT_ENTRY=$(ls -d {{mount_point}}/boot/loader/entries/*.conf | head -n 1)
     COMPOSEFS_HASH=$(basename "$DEPLOY_DIR")
     
+
+    ROOT_FLAGS=""
+    if [ "$FS_TYPE" = "btrfs" ]; then
+        ROOT_FLAGS="rootflags=subvol=/"
+    fi
+
     echo "Modifying boot entry: $BOOT_ENTRY" >> "$LOG_FILE"
     sudo sed -i \
-      "s|^options.*|options rd.luks.name=${LUKS_UUID}={{mapper_name}} rd.luks.uuid=luks-${LUKS_UUID} root=$MAPPER rootflags=subvol=/ rw boot=UUID=${BOOT_UUID} composefs=${COMPOSEFS_HASH} splash quiet|" \
+      "s|^options.*|options rd.luks.name=${LUKS_UUID}={{mapper_name}} rd.luks.uuid=luks-${LUKS_UUID} root=$MAPPER $ROOT_FLAGS rw boot=UUID=${BOOT_UUID} composefs=${COMPOSEFS_HASH} splash quiet|" \
       "$BOOT_ENTRY" >> "$LOG_FILE"
 
     echo "Creating crypttab..." >> "$LOG_FILE"
@@ -187,7 +206,7 @@ install target_disk="":
 
     echo "Creating fstab..." >> "$LOG_FILE"
     sudo bash -c "cat << EOF > ${DEPLOY_DIR}/etc/fstab
-    $MAPPER  /      btrfs  defaults  0 0
+    $MAPPER  /      $FS_TYPE  defaults  0 0
     UUID=${BOOT_UUID}      /boot  vfat   defaults  0 2
     EOF" >> "$LOG_FILE"
 

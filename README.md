@@ -118,6 +118,12 @@ sudo podman run \
 
 You will then have to modify the `fstab` file manually to add any additional partitions post-installation, `bootc install` does not do it for you.
 
+#### Experimental interactive CLI installer
+An experimental LUKS2/composefs installer is available by running `just -f ./install-to-disk,just install`
+</br> It supports LUKS with either EXT4 or BTRFS. </br>
+It will automatically wipe your selected disk, we recommend manually unmounting it first. </br>
+
+
 ## Screenshots
 
 <img width="2376" height="1336" alt="1" src="https://github.com/user-attachments/assets/495cdfe9-4af0-4604-9a3f-8a2fc806924f" />
