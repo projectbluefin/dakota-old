@@ -10,7 +10,7 @@ _default: install
 check-deps:
     #!/usr/bin/env bash
     set -e
-    deps=(tmux gum fzf wipefs sgdisk mkfs.fat mkfs.btrfs mkfs.ext4 podman cryptsetup udevadm)
+    deps=(tmux gum fzf wipefs sgdisk mkfs.fat mkfs.btrfs podman cryptsetup udevadm)
     missing=()
     for dep in "${deps[@]}"; do
         command -v "$dep" >/dev/null 2>&1 || missing+=("$dep")
@@ -78,9 +78,6 @@ install:
     
     # Filesystem Selection
     gum style --foreground 212 "Choose your preferred root filesystem:"
-    # FS_TYPE=$(gum choose --header "~ Btrfs is recommanded" "btrfs" "ext4" "xfs")
-    FS_TYPE=$(gum choose --header "~ Btrfs is recommanded" "btrfs" "ext4") # XFS disabled until it supports verity-fs
-
     PART_PREFIX=""
     if [[ "$DISK" =~ "nvme" || "$DISK" =~ "mmcblk" || "$DISK" =~ "loop" ]]; then PART_PREFIX="p"; fi
     
@@ -94,10 +91,9 @@ install:
         "$(gum style --faint 'Configuration:')" \
         "" \
         "💽 Target Disk:     ${DISK:-'None'}" \
-        "📂 Filesystem:      ${FS_TYPE}" \
         "🔒️ Root Partition:  ${DEV_ROOT:-'None'}" \
         "🥾 Boot Partition:  ${DEV_BOOT:-'None'}" \
-        "🖼️ Image:           {{image}}" \
+        "🖼️  Image:          {{image}}"  \
         "🪵 Log File:        ${LOG_FILE:-'None'}"
 
     if ! gum confirm "⚠️  WARNING: This will WIPE ALL DATA on $DISK. Continue?"; then
@@ -137,17 +133,11 @@ install:
     unset PASS PASS_CONFIRM
 
     # Filesystem Creation
-    gum spin --spinner hamburger --title "Creating filesystems ($FS_TYPE) on $DISK..." -- bash -c "
+    gum spin --spinner hamburger --title "Creating filesystems on $DISK..." -- bash -c "
         {
             sudo udevadm settle
             sudo mkfs.fat -F 32 -n {{boot_label}} $DEV_BOOT
-            if [ \"$FS_TYPE\" = \"btrfs\" ]; then
-                sudo mkfs.btrfs -L {{root_label}} -f $MAPPER
-            elif [ \"$FS_TYPE\" = \"xfs\" ]; then
-                sudo mkfs.xfs -L {{root_label}} $MAPPER
-            else
-                sudo mkfs.ext4 -O verity -L {{root_label}} -F $MAPPER
-            fi
+            sudo mkfs.btrfs -L {{root_label}} -f $MAPPER
             sudo mount $MAPPER {{mount_point}}
             sudo mount --mkdir $DEV_BOOT {{mount_point}}/boot
         } >> \"$LOG_FILE\" 2>&1"
@@ -155,7 +145,6 @@ install:
     BOOT_UUID=$(sudo blkid -s UUID -o value $DEV_BOOT)
     LUKS_UUID=$(sudo blkid -s UUID -o value $DEV_ROOT)
 
-    echo "-> FS Type: $FS_TYPE" >> "$LOG_FILE"
     echo "-> LUKS UUID: $LUKS_UUID" >> "$LOG_FILE"
     echo "-> BOOT UUID: $BOOT_UUID" >> "$LOG_FILE"
 
@@ -187,16 +176,10 @@ install:
     DEPLOY_DIR=$(sudo find {{mount_point}}/state/deploy -maxdepth 1 -type d ! -path {{mount_point}}/state/deploy | head -n 1)
     BOOT_ENTRY=$(ls -d {{mount_point}}/boot/loader/entries/*.conf | head -n 1)
     COMPOSEFS_HASH=$(basename "$DEPLOY_DIR")
-    
-
-    ROOT_FLAGS=""
-    if [ "$FS_TYPE" = "btrfs" ]; then
-        ROOT_FLAGS="rootflags=subvol=/"
-    fi
 
     echo "Modifying boot entry: $BOOT_ENTRY" >> "$LOG_FILE"
     sudo sed -i \
-      "s|^options.*|options rd.luks.name=${LUKS_UUID}={{mapper_name}} rd.luks.uuid=luks-${LUKS_UUID} root=$MAPPER $ROOT_FLAGS rw boot=UUID=${BOOT_UUID} composefs=${COMPOSEFS_HASH} splash quiet|" \
+      "s|^options.*|options rd.luks.name=${LUKS_UUID}={{mapper_name}} rd.luks.uuid=luks-${LUKS_UUID} root=$MAPPER rootflags=subvol=/ rw boot=UUID=${BOOT_UUID} composefs=${COMPOSEFS_HASH} splash quiet|" \
       "$BOOT_ENTRY" >> "$LOG_FILE"
 
     echo "Creating crypttab..." >> "$LOG_FILE"
@@ -206,7 +189,7 @@ install:
 
     echo "Creating fstab..." >> "$LOG_FILE"
     sudo bash -c "cat << EOF > ${DEPLOY_DIR}/etc/fstab
-    $MAPPER  /      $FS_TYPE  defaults  0 0
+    $MAPPER  /      btrfs  defaults  0 0
     UUID=${BOOT_UUID}      /boot  vfat   defaults  0 2
     EOF" >> "$LOG_FILE"
 
@@ -216,5 +199,6 @@ install:
     sudo cryptsetup close {{mapper_name}} >> "$LOG_FILE"
 
     gum style --foreground 2 "✅ Installation complete! You can now boot from the Dakota disk!."
+    gum style --italic --foreground "#b008f3" "🪲  Please report bugs to https://github.com/projectbluefin/dakota/issues."
 
     bash -c 'read -rsn1 -p "Press any key to close the installer..." && tmux kill-session -t dakota-install'
