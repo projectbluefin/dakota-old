@@ -34,7 +34,7 @@ install:
 
         if [ "$ACCEPT" = "Build it now" ]; then
             sudo -v
-            gum style --foreground "#0fca63" "☕️ Get a cup of coffee! The installer will start after the image is built.."
+            gum style --foreground "#0fca63" "  Get a cup of coffee! The installer will start after the image is built.."
             sleep 2s
             just check-deps
             just init-submodules
@@ -68,7 +68,7 @@ install:
     # Disk Selection
     if [ -z "$DISK" ]; then
         DISK=$(lsblk -d -n -o NAME,TRAN | awk '$2 != "" {print $1}' |
-        fzf --header='Select installation disk (🚧 WILL BE WIPED! 🚧)' --preview 'lsblk /dev/{}')
+        fzf --header='Select installation disk (󰒡 WILL BE WIPED! 󰒡)' --preview 'lsblk /dev/{}')
     fi
     if [ -z "$DISK" ]; then
         gum style --foreground 1 "Error: No drive selected."
@@ -90,13 +90,13 @@ install:
         "$(gum style --bold '🦖 DAKOTA CLI INSTALLER')" \
         "$(gum style --faint 'Configuration:')" \
         "" \
-        "💽 Target Disk:     ${DISK:-'None'}" \
-        "🔒️ Root Partition:  ${DEV_ROOT:-'None'}" \
-        "🥾 Boot Partition:  ${DEV_BOOT:-'None'}" \
-        "🖼️  Image:          {{image}}"  \
-        "🪵 Log File:        ${LOG_FILE:-'None'}"
+        " Target Disk:     ${DISK:-'None'}" \
+        "󰉑 Root Partition:  ${DEV_ROOT:-'None'}" \
+        "󱗇 Boot Prtition:   ${DEV_BOOT:-'None'}" \
+        "󰋳 Image:           {{image}}" \
+        " Log File:        ${LOG_FILE:-'None'}"
 
-    if ! gum confirm "⚠️  WARNING: This will WIPE ALL DATA on $DISK. Continue?"; then
+    if ! gum confirm "  WARNING: This will WIPE ALL DATA on $DISK. Continue?"; then
         gum style --foreground 1 "Aborted."
         exit 1
     fi
@@ -116,9 +116,9 @@ install:
 
     # LUKS password setup
     while true; do
-        PASS=$(gum input --password --placeholder "Enter desired LUKS Passphrase")
-        PASS_CONFIRM=$(gum input --password --placeholder "Confirm LUKS Passphrase")
-        if [ "$PASS" = "$PASS_CONFIRM" ] && [ -n "$PASS" ]; then break; else gum style --foreground 1 "Passwords do not match."; fi
+        PASS=$(gum input --password --placeholder "Enter desired LUKS Passphrase 󰯄 ")
+        PASS_CONFIRM=$(gum input --password --placeholder "Confirm LUKS Passphrase 󱦃")
+        if [ "$PASS" = "$PASS_CONFIRM" ] && [ -n "$PASS" ]; then break; else gum style --foreground 1 "󰌊 Passwords do not match."; fi
     done
 
     sudo udevadm settle
@@ -198,7 +198,7 @@ install:
     sudo umount -R {{mount_point}} >> "$LOG_FILE"
     sudo cryptsetup close {{mapper_name}} >> "$LOG_FILE"
 
-    gum style --foreground 2 "✅ Installation complete! You can now boot from the Dakota disk!."
-    gum style --italic --foreground "#b008f3" "🪲  Please report bugs to https://github.com/projectbluefin/dakota/issues."
+    gum style --foreground 2 " Installation complete! You can now boot from the Dakota disk!."
+    gum style --italic --foreground "#b008f3" "  Please report bugs to https://github.com/projectbluefin/dakota/issues."
 
-    bash -c 'read -rsn1 -p "Press any key to close the installer..." && tmux kill-session -t dakota-install'
+    bash -c 'read -rsn1 -p "󰧹 Press any key to close the installer..." && tmux kill-session -t dakota-install'
