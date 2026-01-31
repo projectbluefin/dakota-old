@@ -139,7 +139,7 @@ install:
             sudo mkfs.fat -F 32 -n {{boot_label}} $DEV_BOOT
             sudo mkfs.btrfs -L {{root_label}} -f $MAPPER
             sudo mount $MAPPER {{mount_point}}
-            sudo mount --mkdir $DEV_BOOT {{mount_point}}/boot
+            sudo mount --mkdir $DEV_BOOT {{mount_point}}/boot/efi
         } >> \"$LOG_FILE\" 2>&1"
 
     BOOT_UUID=$(sudo blkid -s UUID -o value $DEV_BOOT)
@@ -165,16 +165,16 @@ install:
                 --karg rd.luks.name=${LUKS_UUID}=cryptroot \
                 --karg root=/dev/mapper/cryptroot \
                 --karg rw
-        } >> \"$LOG_FILE\" 2>&1 || true
+        } >> \"$LOG_FILE\" 2>&1
     "
 
     echo "Installation over, ignore fsfreeze error" >> "$LOG_FILE"
 
     sudo mount -o remount,rw {{mount_point}} >> "$LOG_FILE"
-    sudo mount -o remount,rw {{mount_point}}/boot >> "$LOG_FILE"
+    sudo mount -o remount,rw {{mount_point}}/boot/efi >> "$LOG_FILE"
     
     DEPLOY_DIR=$(sudo find {{mount_point}}/state/deploy -maxdepth 1 -type d ! -path {{mount_point}}/state/deploy | head -n 1)
-    BOOT_ENTRY=$(ls -d {{mount_point}}/boot/loader/entries/*.conf | head -n 1)
+    BOOT_ENTRY=$(ls -d {{mount_point}}/boot/efi/loader/entries/*.conf | head -n 1)
     COMPOSEFS_HASH=$(basename "$DEPLOY_DIR")
 
     echo "Modifying boot entry: $BOOT_ENTRY" >> "$LOG_FILE"
