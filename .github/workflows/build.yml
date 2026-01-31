@@ -79,18 +79,18 @@ jobs:
           sep-tags: " "
           sep-annotations: " "
 
-      - name: Mount BTRFS for podman storage
-        id: container-storage-action
-        uses: ublue-os/container-storage-action@911baca08baf30c8654933e9e9723cb399892140
-        with:
-          mount-opts: noatime,compress-force=zstd:2
+      # - name: Mount BTRFS for podman storage
+      #   id: container-storage-action
+      #   uses: ublue-os/container-storage-action@911baca08baf30c8654933e9e9723cb399892140
+      #   with:
+      #     mount-opts: noatime,compress-force=zstd:2
 
-      - name: Mount BTRFS for /var/tmp
-        id: var-tmp-action
-        uses: ublue-os/container-storage-action@911baca08baf30c8654933e9e9723cb399892140
-        with:
-          mount-opts: noatime,compress-force=zstd:2
-          target-dir: /var/tmp
+      # - name: Mount BTRFS for /var/tmp
+      #   id: var-tmp-action
+      #   uses: ublue-os/container-storage-action@911baca08baf30c8654933e9e9723cb399892140
+      #   with:
+      #     mount-opts: noatime,compress-force=zstd:2
+      #     target-dir: /var/tmp
 
       # - name: Build Image
       #   id: build_image
@@ -101,7 +101,7 @@ jobs:
       #     tags: ${{ steps.metadata.outputs.tags }}
       #     labels: ${{ steps.metadata.outputs.labels }}
       #     oci: true
-      # 
+      #
       - name: Build Image
         id: build_image
         env:
